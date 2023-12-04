@@ -36,10 +36,10 @@
           </div>
 
           <div id="anime-info">
-            <p class="info">{{ animeData.title }}</p>
-            <p class="info">{{ animeData.synopsis }}</p>
-            <p class="info">{{ animeData.episodes }}</p>
-            <p class="info"><a :href="animeData.url" target="_blank">{{ animeData.url }}</a></p>
+            <p v-if="isAnimeGenerated" class="info">{{ "Title: " + animeData.title }}</p>
+            <p v-if="isAnimeGenerated" class="info">{{ "Description: " + animeData.synopsis }}</p>
+            <p v-if="isAnimeGenerated" class="info">{{ "Number of Episodes: " +animeData.episodes }}</p>
+            <p v-if="isAnimeGenerated" class="info">Learn more <a :href="animeData.url" target="_blank">here!</a></p>
           </div>
 
           <div id="button-container">
@@ -51,10 +51,10 @@
         <div id="anime-list" v-if="isLoggedIn">
           <h1>Your List</h1>
           <ul id="animeListUl">
-            <li v-for="(anime, index) in watchList" :key="index">
-              <input type="checkbox">
-              <p class="title">{{ anime.title }}</p>
-              <p class="episodes">{{ anime.episodes }}</p>
+            <li class="anime" v-for="(anime, index) in watchList" :key="index">
+              <input type="checkbox" class="check">
+              <p class="title">{{ "Title: " + anime.title }}</p>
+              <p class="episodes">{{ "Episodes: " + anime.episodes }}</p>
               <button class="delete" @click="removeFromWatchList(index)">Delete</button>
             </li>
           </ul>
@@ -64,7 +64,7 @@
           </div>
 
           <h1>Plot of Episodes</h1>
-          <canvas id="myChart"></canvas>
+          <canvas id="myChart" ref="myChartRef"></canvas>
         </div>
       </main>
     </div>
@@ -72,7 +72,7 @@
 </template>
 
 <script>
-// import Chart from 'chart.js/auto';
+import Chart from 'chart.js/auto';
 import axios from 'axios';
 
 export default {
@@ -81,19 +81,21 @@ export default {
     return {
       apiUrl: "https://api.jikan.moe/v4/random/anime",
       animeData: {
-        imageUrl: "",
+        imageUrl: "https://imageio.forbes.com/specials-images/imageserve/5ed68e8310716f0007411996/A-black-screen--like-the-one-that-overtook-the-internet-on-the-morning-of-June-2-/960x0.jpg?height=399&width=711&fit=bounds",
         title: "",
         synopsis: "",
         episodes: "",
         url: ""
       },
       watchList: [],
-      isLoggedIn: false,
+      isLoggedIn: true,
       isLoginPageVisible: false,
+      isAnimeGenerated: false,
       username: '',
       password: '',
       newUsername: '',
       newPassword: '',
+      chart: null
     };
   },
   computed: {
@@ -161,6 +163,7 @@ export default {
               episodes: anime.episodes,
               url: anime.url
             };
+            this.isAnimeGenerated = true;
           })
           .catch(error => {
             console.error(error);
@@ -168,11 +171,50 @@ export default {
     },
     addToWatchList() {
       this.watchList.push({ ...this.animeData });
+      this.updatePlot();
     },
     removeFromWatchList(index) {
       this.watchList.splice(index, 1);
+      this.updatePlot();
     },
+    updatePlot() {
+      const titles = this.watchList.map(anime => anime.title);
+      const epnums = this.watchList.map(anime => anime.episodes);
+
+      if(this.chart){
+        this.chart.destroy();
+      }
+      var barColors = "orange";
+
+      
+      this.chart = new Chart(this.$refs.myChartRef, {
+      type: "bar",
+      data: {
+        labels: titles,
+        datasets: [{
+          backgroundColor: barColors,
+          data: epnums
+        }]
+      },
+      options: {
+        plugins: {
+          title: {
+            display: true,
+            text: "Number of Episodes per Show on List"
+          },
+          legend: { display: false }
+        },
+        
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        },
+      }
+    });
+   },
   },
+  
   mounted() {
     // Additional mounted logic can go here
   }
