@@ -88,7 +88,7 @@ export default {
         url: ""
       },
       watchList: [],
-      isLoggedIn: true,
+      isLoggedIn: false,
       isLoginPageVisible: false,
       isAnimeGenerated: false,
       username: '',
@@ -136,7 +136,7 @@ export default {
       // Optionally, you can log in the user immediately after registration
       this.username = this.newUsername;
       this.password = this.newPassword;
-      this.login();
+      //this.login();
     } catch (error) {
       console.error('Registration error:', error);
       // Handle registration error, display message to the user
