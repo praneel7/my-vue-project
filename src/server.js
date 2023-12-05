@@ -6,7 +6,6 @@ const bcrypt = require('bcrypt');
 const cors = require('cors');
 const User = require('../models/User'); // Adjust the path according to your project structure
 
-// const User = require('./User'); // Assuming you have this model
 require('dotenv').config();
 
 const app = express();
