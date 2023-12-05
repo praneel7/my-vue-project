@@ -59,22 +59,25 @@ app.post('/login', async (req, res) => {
     try {
         const user = await User.findOne({ username: req.body.username });
         if (!user) {
-            res.status(400).send('User not found');
+            return res.status(400).send('User not found');
         }
         
         const isMatch = await bcrypt.compare(req.body.password, user.hashedPassword);
         if (!isMatch) {
-            res.status(400).send('Invalid credentials');
+            return res.status(400).send('Invalid credentials');
         }
 
+        // Note: Be careful about sending the entire user object, it might contain sensitive information
         res.status(200).send({
             "isValid": true,
-            "currentUser": user
+            "currentUser": { username: user.username, id: user._id } // send only non-sensitive data
         });
     } catch (error) {
+        console.error('Login error:', error);
         res.status(500).send('Error logging in');
     }
 });
+
 
 // Logout Endpoint
 app.post('/logout', (req, res) => {

@@ -121,7 +121,11 @@ export default {
       // You may want to handle the session token or user data here
     } catch (error) {
       console.error('Login error:', error);
-      // Handle login error, display message to the user
+    if (error.response && error.response.status === 400) {
+      alert('Incorrect username or password. Please try again.'); // Displaying a simple alert
+    } else {
+      alert('An error occurred during login. Please try again later.'); // For other types of errors
+    }
     }
   },
   async register() {
