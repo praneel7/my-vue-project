@@ -10,8 +10,12 @@ const userSchema = new mongoose.Schema({
   hashedPassword: {
     type: String,
     required: true
-  }
-  // add other fields as needed
+  },
+  watchList: [{
+    title: String,
+    episodes: Number
+    
+  }]
 });
 
 // Export the model

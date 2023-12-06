@@ -118,7 +118,9 @@ export default {
       this.isLoggedIn = true;
       this.isLoginPageVisible = false;
       console.log('Login successful:', response.data);
-      // You may want to handle the session token or user data here
+      // After successful login, load the user's watchlist
+      await this.loadWatchList();
+      await this.updatePlot();
     } catch (error) {
       console.error('Login error:', error);
     if (error.response && error.response.status === 400) {
@@ -161,7 +163,7 @@ export default {
       console.error('Logout error:', error);
     }
   },
-    generateRandomAnime() {
+  generateRandomAnime() {
       axios.get(this.apiUrl)
           .then(response => {
             const anime = response.data.data;
@@ -178,15 +180,58 @@ export default {
             console.error(error);
           });
     },
-    addToWatchList() {
-      this.watchList.push({ ...this.animeData });
+  async addToWatchList() {
+    try {
+    const animeToAdd = { ...this.animeData };
+    const response = await axios.post('http://localhost:3000/watchlist', { 
+      username: this.username, 
+      anime: animeToAdd 
+    });
+
+    // Check if the anime is successfully added to the backend before updating the frontend list
+    if (response.data === 'Anime added to watchlist') {
+      this.watchList.push(animeToAdd);
       this.updatePlot();
+      alert('Anime added to watchlist');
+    } else {
+      alert(response.data); // Show error message if anime is already in the watchlist
+    }
+    } catch (error) {
+    console.error('Error adding to watchlist:', error);
+    alert('Error adding to watchlist');
+    }
     },
-    removeFromWatchList(index) {
+  async removeFromWatchList(index) {
+     try {
+    const animeTitleToRemove = this.watchList[index].title;
+    const response = await axios.post('http://localhost:3000/watchlist/remove', { 
+      username: this.username, 
+      animeTitle: animeTitleToRemove 
+    });
+
+    // Check if the anime is successfully removed from the backend before updating the frontend list
+    if (response.data === 'Anime removed from watchlist') {
       this.watchList.splice(index, 1);
       this.updatePlot();
+      alert('Anime removed from watchlist');
+    } else {
+      alert(response.data); // Show error message in case of failure
+    }
+   } catch (error) {
+    console.error('Error removing from watchlist:', error);
+    alert('Error removing from watchlist');
+    }
     },
-    updatePlot() {
+  async loadWatchList() {
+    try {
+    const response = await axios.get('http://localhost:3000/watchlist', { params: { username: this.username } });
+    this.watchList = response.data;
+    } catch (error) {
+    console.error('Error loading watchlist:', error);
+    }
+    },
+
+  updatePlot() {
       const titles = this.watchList.map(anime => anime.title);
       const epnums = this.watchList.map(anime => anime.episodes);
 

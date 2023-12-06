@@ -110,15 +110,68 @@ app.get('/session', (req, res) => {
     }
 });
 
-// Add Watchlist Endpoint
+// Add to Watchlist Endpoint
 app.post('/watchlist', async (req, res) => {
-    // ... Logic to add to watchlist
+    try {
+        const { username, anime } = req.body;
+        const user = await User.findOne({ username });
+
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        // Check if the anime is already in the watchlist
+        if (user.watchList.some(item => item.title === anime.title)) {
+            return res.status(400).send('Anime already in watchlist');
+        }
+
+        user.watchList.push(anime);
+        await user.save();
+
+        res.status(200).send('Anime added to watchlist');
+    } catch (error) {
+        console.error('Error updating watchlist:', error);
+        res.status(500).send('Error updating watchlist');
+    }
 });
+
 
 // Get Watchlist Endpoint
 app.get('/watchlist', async (req, res) => {
-    // ... Logic to retrieve user's watchlist
+    try {
+        const { username } = req.query; // assuming username is passed as a query parameter
+        const user = await User.findOne({ username });
+
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        res.status(200).json(user.watchList);
+    } catch (error) {
+        console.error('Error retrieving watchlist:', error);
+        res.status(500).send('Error retrieving watchlist');
+    }
 });
+// Remove from Watchlist
+app.post('/watchlist/remove', async (req, res) => {
+    try {
+        const { username, animeTitle } = req.body;
+        const user = await User.findOne({ username });
+
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        user.watchList = user.watchList.filter(item => item.title !== animeTitle);
+        await user.save();
+
+        res.status(200).send('Anime removed from watchlist');
+    } catch (error) {
+        console.error('Error removing from watchlist:', error);
+        res.status(500).send('Error removing from watchlist');
+    }
+});
+
 
 // Add Friend Endpoint
 app.post('/friends', async (req, res) => {
