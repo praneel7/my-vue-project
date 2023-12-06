@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="login_logout">
-      <button class="anime-buttons" v-if="!isLoggedIn" @click="toggleLoginPage">Login</button>
+      <button class="anime-buttons" @click="toggleLoginPage">Login</button>
       <button class="anime-buttons" v-if="isLoggedIn" @click="logout">Logout</button>
     </div>
     <div id="app">
