@@ -151,7 +151,12 @@ export default {
       const response = await axios.post('http://localhost:3000/logout');
       this.isLoggedIn = false;
       console.log('Logout successful:', response.data);
-      // You may want to clear the session data or token here
+      // session data cleared through server
+      // Reset the login and register form fields
+    this.username = '';
+    this.password = '';
+    this.newUsername = '';
+    this.newPassword = '';
     } catch (error) {
       console.error('Logout error:', error);
     }

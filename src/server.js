@@ -11,6 +11,7 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
+
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -22,6 +23,11 @@ mongoose.connect(process.env.MONGODB_URI, {
 // Middlewares
 app.use(cors());
 app.use(express.json());
+app.use(session({
+    secret: 'your-secret-key',
+    resave: false,
+    saveUninitialized: true,
+}));
 
 // Registration Endpoint
 app.post('/register', async (req, res) => {
@@ -68,9 +74,10 @@ app.post('/login', async (req, res) => {
         }
 
         // Note: Be careful about sending the entire user object, it might contain sensitive information
+        req.session.user = { id: user._id, username: user.username }; // Example session data
         res.status(200).send({
             "isValid": true,
-            "currentUser": { username: user.username, id: user._id } // send only non-sensitive data
+            "currentUser": { username: user.username, id: user._id } // only non-sensitive data
         });
     } catch (error) {
         console.error('Login error:', error);
@@ -81,8 +88,17 @@ app.post('/login', async (req, res) => {
 
 // Logout Endpoint
 app.post('/logout', (req, res) => {
-    req.session.destroy();
-    res.send('Logged out successfully');
+    if (req.session) {
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('Session destruction error:', err);
+                return res.status(500).send('Error logging out');
+            }
+            res.send('Logged out successfully');
+        });
+    } else {
+        res.send('No active session to logout from');
+    }
 });
 
 // Endpoint to Check Session
